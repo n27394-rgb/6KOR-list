@@ -221,7 +221,7 @@
     }
 
     function renderStats() {
-        const unfinishedCounts = { '飛秒': 0, '閃光': 0, '拍照': 0, '其他': 0 };
+        const unfinishedCounts = { 'Flacs': 0, 'Toric-mark': 0, '一樓拍照': 0, '其他': 0 };
         cases.forEach(c => {
             Object.entries(c.items).forEach(([key, isDone]) => {
                 if (!isDone && unfinishedCounts.hasOwnProperty(key)) unfinishedCounts[key]++;
@@ -333,7 +333,7 @@
     function openModal(editData = null) {
         const isEdit = !!editData;
         const d = editData || { raw: '', items: {}, note: '', isTaken: false };
-        const defaultOpts = ['飛秒', '閃光', '拍照', '其他'];
+        const defaultOpts = ['Flacs', 'Toric-mark', '一樓拍照', '其他'];
         
         document.getElementById('modalArea').innerHTML = `
         <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
