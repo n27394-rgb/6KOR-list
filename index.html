@@ -2,444 +2,382 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日手術前特殊檢查記錄清單</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手術前檢查記錄</title>
+    
+    <!-- PWA 與應用程式圖示設定 -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#121212">
+    
+    <!-- iPhone 圖示 (請替換 href 為你的圖片網址) -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3209/3209141.png">
+    
+    <!-- 網頁標籤與 Android 圖示 (請替換 href 為你的圖片網址) -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3209/3209141.png">
+
     <style>
+        /* 定義全局 UI 變數 */
         :root {
-            --bg-body: #121212;
-            --bg-card: #1e1e1e;
-            --bg-input: #2a2a2a;
-            --border-color: #333333;
-            --text-primary: #e0e0e0;
-            --text-secondary: #aaaaaa;
-            --teal-primary: #26a69a;
-            --teal-bg: rgba(38, 166, 154, 0.15);
-            --amber-primary: #ffb74d;
-            --amber-bg: rgba(255, 183, 77, 0.15);
-            --blue-primary: #64b5f6;
-            --blue-bg: rgba(100, 181, 246, 0.15);
-            --purple-primary: #b39ddb;
-            --purple-bg: rgba(179, 157, 219, 0.15);
-            --red-primary: #ef5350;
-            --disabled-bg: rgba(255, 255, 255, 0.05);
-            --disabled-text: #555555;
-            --border-radius-md: 8px;
-            --border-radius-lg: 12px;
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2a2a2a; --border-color: #333;
+            --text-primary: #e0e0e0; --text-secondary: #aaa; --teal-primary: #26a69a; --teal-bg: rgba(38, 166, 154, 0.1);
+            --amber-primary: #ffb74d; --blue-primary: #64b5f6; --purple-primary: #b39ddb; --purple-bg: rgba(179, 157, 219, 0.1);
+            --red-primary: #ef5350; --br-md: 10px; --br-lg: 16px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-sans); background-color: var(--bg-body); color: var(--text-primary); line-height: 1.5; -webkit-tap-highlight-color: transparent; }
-        .app { max-width: 600px; margin: 0 auto; padding: 1.5rem 1rem; }
+        /* 基礎重置與排版設定 */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg-body); color: var(--text-primary); line-height: 1.4; }
+        .app { max-width: 550px; margin: 0 auto; padding: 12px; }
 
-        #syncStatus { font-size: 11px; margin-bottom: 8px; text-align: right; height: 16px; font-weight: 500; }
-        .status-syncing { color: var(--blue-primary); }
-        .status-success { color: var(--teal-primary); }
-        .status-error { color: var(--red-primary); }
-
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 12px; }
-        .header-left h2 { font-size: 20px; font-weight: 600; }
-        .header-left p { font-size: 13px; color: var(--text-secondary); }
-        .header-actions { display: flex; gap: 8px; }
+        /* 同步狀態提示標籤 */
+        #syncStatus { font-size: 11px; text-align: right; height: 20px; color: var(--text-secondary); }
+        .status-syncing { color: var(--blue-primary) !important; }
+        .status-success { color: var(--teal-primary) !important; }
+        .status-error { color: var(--red-primary) !important; }
         
-        button { cursor: pointer; border: none; transition: opacity 0.2s; }
-        button:active { opacity: 0.7; }
-
-        .btn-add { font-size: 14px; padding: 8px 16px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); }
-        .btn-clear-all { font-size: 12px; padding: 8px 12px; border-radius: var(--border-radius-md); border: 1px solid rgba(239, 83, 80, 0.3); background: rgba(239, 83, 80, 0.1); color: var(--red-primary); }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1rem; }
-        .stat-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 8px; text-align: center; }
-        .stat-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
-        .stat-val { font-size: 16px; font-weight: 700; color: var(--amber-primary); }
-        .stat-val.zero { color: var(--teal-primary); opacity: 0.6; }
-
-        .filter-row { display: flex; gap: 4px; margin-bottom: 1.2rem; background: var(--bg-card); padding: 4px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); }
-        .filter-btn { flex: 1; font-size: 12px; padding: 8px 4px; border-radius: 6px; background: transparent; color: var(--text-secondary); white-space: nowrap; }
-        .filter-btn.active { background: var(--bg-input); color: var(--text-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-
-        .case-list { display: flex; flex-direction: column; gap: 12px; }
-        .case-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 14px; position: relative; }
-        .case-card.taken { border-left: 4px solid var(--purple-primary); }
+        /* 頁首標題區 */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .header h2 { font-size: 18px; font-weight: 600; }
+        .header p { font-size: 12px; color: var(--text-secondary); }
+        .btn-add { background: var(--teal-primary); color: white; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: var(--br-md); border:none; cursor:pointer; }
+        .btn-clear { background: transparent; color: var(--red-primary); border: 1px solid rgba(239,83,80,.3); padding: 5px 10px; font-size: 11px; border-radius: var(--br-md); cursor:pointer; }
         
-        .case-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .case-name { font-size: 16px; font-weight: 600; display: block; }
-        .case-id-text { font-size: 12px; color: var(--text-secondary); font-family: monospace; }
+        /* 上方統計網格 */
+        .stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 12px; }
+        .stat-item { background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 2px; text-align: center; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+        .stat-item:active { background: var(--bg-input); }
+        .stat-label { font-size: 9px; color: var(--text-secondary); display: block; margin-bottom: 2px; }
+        .stat-val { font-size: 14px; font-weight: 700; color: var(--amber-primary); }
+        .stat-val.zero { color: var(--text-secondary); opacity: 0.3; }
         
-        .item-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-        .item-chip { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
-        .item-chip.done { background: var(--teal-bg); color: var(--teal-primary); border-color: var(--teal-primary); }
-
-        .case-note { font-size: 13px; color: var(--text-secondary); margin-top: 5px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; border-left: 2px solid #444; word-break: break-all; }
-
-        .case-footer { display: flex; gap: 12px; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px; align-items: center; }
-        .footer-btn { font-size: 12px; color: var(--text-secondary); background: none; text-decoration: underline; }
+        /* 篩選按鈕列 */
+        .filter-row { display: flex; gap: 4px; padding: 4px; background: var(--bg-card); border-radius: 20px; margin-bottom: 12px; border: 1px solid var(--border-color); }
+        .filter-btn { flex: 1; font-size: 11px; padding: 8px 0; color: var(--text-secondary); background: transparent; border:none; border-radius: 16px; cursor:pointer; transition: all 0.2s; }
+        .filter-btn.active { background: var(--bg-input); color: white; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
         
-        .take-btn { padding: 7px 16px; border-radius: 6px; background: var(--disabled-bg); color: var(--disabled-text); margin-left: auto; cursor: not-allowed; font-weight: 600; font-size: 12px; }
-        .take-btn.ready { background: var(--purple-bg); color: var(--purple-primary); border: 1px solid var(--purple-primary); cursor: pointer; }
-        .take-btn.active { background: var(--purple-primary); color: white !important; cursor: pointer; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
-        .modal { background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; width: 100%; max-width: 420px; }
-        .form-row { margin-bottom: 15px; }
-        .form-row label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
-        .form-row input, .form-row textarea { width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-size: 14px; background: var(--bg-input); color: var(--text-primary); outline: none; }
+        /* 個案卡片 */
+        .case-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--br-lg); padding: 16px; margin-bottom: 12px; transition: transform 0.1s; }
+        .case-card.taken { border-left: 5px solid var(--purple-primary); background: linear-gradient(90deg, rgba(179,157,219,0.08), transparent); }
+        .case-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .case-name { font-size: 17px; font-weight: 600; }
+        .case-info { font-size: 11px; color: var(--text-secondary); font-family: monospace; margin-top: 2px; }
         
-        .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .check-opt { display: flex; align-items: center; gap: 8px; background: var(--bg-input); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-size: 14px; }
-        .check-opt.active { border-color: var(--blue-primary); color: var(--blue-primary); background: rgba(100, 181, 246, 0.1); }
+        /* 檢查項目點選標籤 (Chips) */
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+        .chip { font-size: 12px; padding: 6px 14px; border-radius: 20px; background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all 0.2s; }
+        .chip.done { background: var(--teal-bg); color: var(--teal-primary); border-color: var(--teal-primary); }
+        
+        /* 備註欄位樣式 */
+        .note { font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; margin: 10px 0; border-left: 3px solid #555; }
+        
+        /* 頁尾 */
+        .footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2a2a2a; }
+        .footer-left { display: flex; gap: 14px; }
+        .footer-link { font-size: 11px; color: var(--text-secondary); background: none; cursor: pointer; border:none; padding: 4px 0; }
+        
+        /* 接刀按鈕 */
+        .btn-take { padding: 7px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; background: #2a2a2a; color: #555; border:none; cursor: pointer; transition: all 0.2s; }
+        .btn-take.ready { background: var(--purple-bg); color: var(--purple-primary); border: 1px solid rgba(179,157,219,0.3); }
+        .btn-take.active { background: var(--purple-primary); color: #121212; }
+        
+        /* 彈窗 */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 15px; backdrop-filter: blur(4px); }
+        .modal { background: var(--bg-card); width: 100%; max-width: 380px; padding: 24px; border-radius: 20px; border: 1px solid #444; position: relative; }
+        .modal-close-x { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; border-radius: 50%; transition: background 0.2s; }
+        .modal-close-x:hover { background: rgba(255,255,255,0.1); color: white; }
+        
+        .field { margin-bottom: 18px; }
+        .field label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+        .field input, .field textarea { width: 100%; background: var(--bg-input); border: 1px solid #444; color: white; padding: 12px; border-radius: 12px; font-size: 14px; outline: none; }
+        
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .opt-item { background: var(--bg-input); padding: 12px; border-radius: 12px; border: 1px solid #444; text-align: center; font-size: 13px; cursor: pointer; }
+        .opt-item.active { border-color: var(--blue-primary); color: var(--blue-primary); background: rgba(100,181,246,0.1); }
+        
+        /* 待辦清單樣式 */
+        .pending-list { max-height: 400px; overflow-y: auto; margin-top: 10px; }
+        .pending-item { padding: 12px 4px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .pending-item:last-child { border: none; }
+        .pending-name { font-weight: 600; color: var(--amber-primary); font-size: 15px; }
+        .pending-info { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; }
-        .btn-save { background: var(--teal-primary); color: white; padding: 10px 20px; border-radius: 6px; font-weight: 600; }
-        .btn-cancel { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 6px; }
-        .btn-danger { background: var(--red-primary); color: white; padding: 10px 20px; border-radius: 6px; font-weight: 600; }
-
-        .empty-state { text-align: center; padding: 3rem 0; color: var(--text-secondary); font-size: 14px; }
+        .btn-confirm { background: var(--teal-primary); color: white; padding: 10px 24px; font-weight: 600; border:none; border-radius: 12px; cursor: pointer; }
+        .btn-cancel { background: transparent; color: var(--text-secondary); padding: 10px 15px; border:none; cursor: pointer; }
     </style>
 </head>
 <body>
-
 <div class="app">
-    <div id="syncStatus">準備就緒</div>
+    <div id="syncStatus">讀取中...</div>
 
     <div class="header">
-        <div class="header-left">
-            <h2>手術前特殊檢查記錄清單</h2>
-            <p id="dateLabel"></p>
-        </div>
-        <div class="header-actions">
-            <button class="btn-clear-all" onclick="openAdminClearModal()">🗑 清空</button>
-            <button class="btn-add" onclick="openModal()">＋ 新增個案</button>
+        <div><h2 id="dateDisplay">載入中</h2><p>手術前特殊檢查清單</p></div>
+        <div class="header-btns">
+            <button class="btn-clear" onclick="askClear()">清空</button>
+            <button class="btn-add" onclick="openForm()">＋新增</button>
         </div>
     </div>
 
-    <div class="stats-grid" id="statsRow"></div>
+    <!-- 檢查項目統計區域 -->
+    <div class="stats-row" id="statList"></div>
 
     <div class="filter-row">
-        <button class="filter-btn active" onclick="setFilter('all', this)">全部 <span id="count-all">0</span></button>
-        <button class="filter-btn" onclick="setFilter('pending', this)">待辦 <span id="count-pending">0</span></button>
-        <button class="filter-btn" onclick="setFilter('completed', this)">完檢 <span id="count-completed">0</span></button>
-        <button class="filter-btn" onclick="setFilter('taken', this)">已接刀 <span id="count-taken">0</span></button>
+        <button class="filter-btn active" id="f-all" onclick="changeFilter('all')">全部 <span id="c-all">0</span></button>
+        <button class="filter-btn" id="f-wait" onclick="changeFilter('wait')">待辦 <span id="c-wait">0</span></button>
+        <button class="filter-btn" id="f-done" onclick="changeFilter('done')">完檢 <span id="c-done">0</span></button>
+        <button class="filter-btn" id="f-take" onclick="changeFilter('take')">接刀 <span id="c-take">0</span></button>
     </div>
 
-    <div class="case-list" id="caseList"></div>
-    <div id="modalArea"></div>
+    <div id="mainList"></div>
 </div>
 
+<div id="modalContainer"></div>
+
 <script>
-    // --- 配置區 ---
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWjt6RMzqZGvOKL6T2DgGysUUlqI_AVxCGN4VY40EqcJVAQeNmfFwItHPcoANpdojL/exec'; 
-    const STORAGE_KEY = 'daily_case_records_v1';
-    const ADMIN_PASSWORD = '18691';
-    
-    // --- 狀態管理 ---
-    let cases = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let nextId = cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1;
-    let currentFilter = 'all';
-    let syncTimer = null;
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWjt6RMzqZGvOKL6T2DgGysUUlqI_AVxCGN4VY40EqcJVAQeNmfFwItHPcoANpdojL/exec';
+    const KEY = 'surgery_v1_fast';
+    const OPTS = ['同意書', 'Flacs', 'Toric-mark', '一樓拍照', '吃藥', '其他'];
+    const PWD = '18691';
 
-    // --- 初始化 UI ---
-    const today = new Date();
-    document.getElementById('dateLabel').textContent = today.toLocaleDateString('zh-TW', { month:'long', day:'numeric', weekday:'short' });
+    let data = JSON.parse(localStorage.getItem(KEY)) || [];
+    let filterType = 'all';
 
-    // --- 同步邏輯 (修正處) ---
-    function updateSyncUI(status, text) {
-        const el = document.getElementById('syncStatus');
-        el.className = 'status-' + status;
-        el.textContent = text;
+    window.onload = () => {
+        initUI();
+        loadCloud();
+        // 監聽 Esc 鍵
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeForm();
+        });
+    };
+
+    function initUI() {
+        const d = new Date();
+        document.getElementById('dateDisplay').innerText = d.toLocaleDateString('zh-TW', {month:'short', day:'numeric', weekday:'short'});
+        render();
     }
 
-    async function syncToCloud() {
-        if (!GAS_URL) return;
-        updateSyncUI('syncing', '正在同步至雲端...');
-        
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
+    function render() {
+        const s = { all: data.length, wait: 0, done: 0, take: 0 };
+        const optStats = {}; OPTS.forEach(o => optStats[o] = 0);
 
-            // 修正：直接傳送 cases 陣列，不加 action 物件包裹
-            await fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cases), 
-                signal: controller.signal
-            });
+        const filtered = data.filter(c => {
+            const isDone = Object.values(c.items).every(v => v);
+            Object.entries(c.items).forEach(([k, v]) => { if(!v) optStats[k]++; });
             
-            updateSyncUI('success', '☁ 雲端備份成功 ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-        } catch (err) {
-            console.error(err);
-            updateSyncUI('error', '雲端連線失敗');
-        }
-    }
+            if (isDone) s.done++; else s.wait++;
+            if (c.taken) s.take++;
 
-    async function loadFromCloud() {
-        if (!GAS_URL) return;
-        updateSyncUI('syncing', '從雲端提取資料...');
-        try {
-            const response = await fetch(GAS_URL);
-            if (!response.ok) throw new Error('Fetch failed');
-            const cloudData = await response.json();
-            
-            if (Array.isArray(cloudData)) {
-                // 修正：處理從雲端回來時 items 可能是 JSON 字串或物件的情況
-                cases = cloudData.map(c => ({
-                    ...c,
-                    items: typeof c.items === 'string' ? JSON.parse(c.items) : c.items
-                }));
-                nextId = cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1;
-                saveToLocal(false); 
-                renderList();
-                updateSyncUI('success', '☁ 雲端載入完成');
-            }
-        } catch (err) {
-            console.warn('雲端提取失敗，改用本地數據', err);
-            updateSyncUI('success', '已載入本地數據');
-            renderList();
-        }
-    }
-
-    function saveToLocal(shouldSyncCloud = true) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
-        if (shouldSyncCloud) {
-            clearTimeout(syncTimer);
-            syncTimer = setTimeout(syncToCloud, 3000); 
-        }
-    }
-
-    // --- 業務邏輯 ---
-    function setFilter(f, el) {
-        currentFilter = f;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        el.classList.add('active');
-        renderList();
-    }
-
-    function isCaseCompleted(c) {
-        const itemValues = Object.values(c.items);
-        return itemValues.length > 0 && itemValues.every(val => val === true);
-    }
-
-    function renderStats() {
-        const unfinishedCounts = { 'Flacs': 0, 'Toric-mark': 0, '一樓拍照': 0, '吃藥': 0, '其他': 0 };
-        cases.forEach(c => {
-            Object.entries(c.items).forEach(([key, isDone]) => {
-                if (!isDone && unfinishedCounts.hasOwnProperty(key)) unfinishedCounts[key]++;
-            });
+            if (filterType === 'wait') return !isDone;
+            if (filterType === 'done') return isDone;
+            if (filterType === 'take') return c.taken;
+            return true;
         });
 
-        document.getElementById('statsRow').innerHTML = Object.entries(unfinishedCounts).map(([label, val]) => `
-            <div class="stat-box">
-                <div class="stat-label">${label}</div>
-                <div class="stat-val ${val === 0 ? 'zero' : ''}">${val}</div>
+        // 渲染統計格點，加入點擊事件
+        document.getElementById('statList').innerHTML = OPTS.map(o => `
+            <div class="stat-item" onclick="showPendingList('${o}')">
+                <span class="stat-label">${o}</span>
+                <span class="stat-val ${optStats[o]===0?'zero':''}">${optStats[o]}</span>
             </div>
         `).join('');
+        
+        ['all','wait','done','take'].forEach(k => document.getElementById(`c-${k}`).innerText = s[k]);
+
+        const list = document.getElementById('mainList');
+        if (!filtered.length) { list.innerHTML = `<p style="text-align:center;padding:50px;color:#666">無資料</p>`; return; }
+
+        list.innerHTML = filtered.map(c => {
+            const isDone = Object.values(c.items).every(v => v);
+            return `
+            <div class="case-card ${c.taken?'taken':''}">
+                <div class="case-header">
+                    <div><div class="case-name">${c.name}</div><div class="case-info">${c.info}</div></div>
+                    <div style="font-size:10px;font-weight:bold;color:${isDone?'var(--teal-primary)':'var(--amber-primary)'}">${isDone?'✓ 完檢':'⏳ 檢查中'}</div>
+                </div>
+                <div class="chips">${Object.entries(c.items).map(([k,v]) => `<div class="chip ${v?'done':''}" onclick="toggleItem(${c.id},'${k}')">${k}</div>`).join('')}</div>
+                ${c.note ? `<div class="note">${c.note}</div>` : ''}
+                <div class="footer">
+                    <div class="footer-left">
+                        <button class="footer-link" onclick="openForm(${c.id})">編輯</button>
+                        <button class="footer-link" style="color:var(--red-primary)" onclick="delCase(${c.id})">刪除</button>
+                    </div>
+                    <button class="btn-take ${isDone?'ready':''} ${c.taken?'active':''}" onclick="${isDone?`toggleTake(${c.id})`:''}">
+                        ${c.taken?'已接刀':'接刀'}
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
     }
 
-    function renderList() {
-        renderStats();
+    /**
+     * 顯示特定檢查項目未完成的清單
+     */
+    function showPendingList(optName) {
+        const pending = data.filter(c => c.items[optName] === false);
         
-        const allCount = cases.length;
-        const pendingCount = cases.filter(c => !isCaseCompleted(c)).length;
-        const completedCount = cases.filter(c => isCaseCompleted(c)).length;
-        const takenCount = cases.filter(c => c.isTaken).length;
-
-        document.getElementById('count-all').textContent = allCount;
-        document.getElementById('count-pending').textContent = pendingCount;
-        document.getElementById('count-completed').textContent = completedCount;
-        document.getElementById('count-taken').textContent = takenCount;
-
-        let filtered = cases;
-        if (currentFilter === 'pending') filtered = cases.filter(c => !isCaseCompleted(c));
-        else if (currentFilter === 'completed') filtered = cases.filter(c => isCaseCompleted(c));
-        else if (currentFilter === 'taken') filtered = cases.filter(c => c.isTaken);
-
-        const listEl = document.getElementById('caseList');
-        if (!filtered.length) {
-            listEl.innerHTML = `<div class="empty-state">${cases.length === 0 ? '目前沒有任何個案，點擊右上方「新增」' : '此篩選條件下無資料'}</div>`;
-            return;
-        }
-
-        listEl.innerHTML = filtered.map(c => {
-            const completed = isCaseCompleted(c);
-            return `
-            <div class="case-card ${c.isTaken ? 'taken' : ''}">
-                <div class="case-top">
-                    <div>
-                        <span class="case-name">${c.name}</span>
-                        <span class="case-id-text">${c.info}</span>
-                    </div>
-                    <div style="font-size:11px;">
-                        ${completed ? '<span style="color:var(--teal-primary)">✓ 檢查完成</span>' : '<span style="color:var(--amber-primary)">⏳ 檢查中</span>'}
-                    </div>
-                </div>
-
-                <div class="item-actions">
-                    ${Object.entries(c.items).map(([name, isDone]) => `
-                        <div class="item-chip ${isDone ? 'done' : ''}" onclick="toggleItem(${c.id}, '${name}')">
-                            ${name}
+        let content = '';
+        if (pending.length === 0) {
+            content = `<p style="text-align:center;padding:40px 20px;color:var(--teal-primary)">恭喜！所有 ${optName} 已完成 ✨</p>`;
+        } else {
+            content = `
+                <div class="pending-list">
+                    ${pending.map(c => `
+                        <div class="pending-item">
+                            <div>
+                                <div class="pending-name">${c.name}</div>
+                                <div class="pending-info">${c.info}</div>
+                            </div>
+                            <button class="footer-link" style="color:var(--blue-primary); font-weight:600;" onclick="closeForm(); scrollToId(${c.id})">查看</button>
                         </div>
                     `).join('')}
                 </div>
+            `;
+        }
 
-                ${c.note ? `<div class="case-note">${c.note}</div>` : ''}
-
-                <div class="case-footer">
-                    <button class="footer-btn" onclick="editCase(${c.id})">編輯</button>
-                    <button class="footer-btn" style="color:var(--red-primary)" onclick="deleteCase(${c.id})">刪除</button>
-                    
-                    <button 
-                        class="take-btn ${completed ? 'ready' : ''} ${c.isTaken ? 'active' : ''}" 
-                        onclick="${completed ? `toggleTaken(${c.id})` : ''}"
-                    >
-                        ${c.isTaken ? '已接刀' : '接刀'}
-                    </button>
+        document.getElementById('modalContainer').innerHTML = `
+            <div class="modal-overlay" id="m-over" onclick="if(event.target.id==='m-over')closeForm()">
+                <div class="modal">
+                    <button class="modal-close-x" onclick="closeForm()">✕</button>
+                    <h3 style="margin-bottom:6px">${optName} 待辦</h3>
+                    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">尚未完成清單 (共 ${pending.length} 位)</p>
+                    ${content}
                 </div>
             </div>
-        `}).join('');
+        `;
     }
 
-    function toggleItem(caseId, itemName) {
-        cases = cases.map(c => {
-            if (c.id === caseId) {
-                const newItems = { ...c.items, [itemName]: !c.items[itemName] };
-                const allDone = Object.values(newItems).every(v => v === true);
-                return { ...c, items: newItems, isTaken: allDone ? c.isTaken : false };
+    /** 滾動到指定卡片位置 */
+    function scrollToId(id) {
+        changeFilter('all');
+        setTimeout(() => {
+            const cards = document.querySelectorAll('.case-card');
+            const target = Array.from(cards).find(c => c.innerHTML.includes(`openForm(${id})`));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.style.outline = "2px solid var(--blue-primary)";
+                setTimeout(() => target.style.outline = "none", 2000);
             }
-            return c;
-        });
-        saveToLocal();
-        renderList();
+        }, 100);
     }
 
-    function toggleTaken(id) {
-        cases = cases.map(c => {
-            if (c.id === id) return { ...c, isTaken: !c.isTaken };
-            return c;
-        });
-        saveToLocal();
-        renderList();
+    function save(sync = true) {
+        localStorage.setItem(KEY, JSON.stringify(data));
+        render();
+        if (sync && GAS_URL) syncCloud();
     }
 
-    function deleteCase(id) {
-        if(confirm('確定要刪除這筆資料嗎？')) {
-            cases = cases.filter(c => c.id !== id);
-            saveToLocal();
-            renderList();
+    async function loadCloud() {
+        if (!GAS_URL) return;
+        setStatus('syncing', '正在同步...');
+        try {
+            const res = await fetch(GAS_URL, { signal: AbortSignal.timeout(5000) });
+            const cloud = await res.json();
+            if (Array.isArray(cloud)) {
+                data = cloud.map(c => ({ ...c, items: typeof c.items === 'string' ? JSON.parse(c.items) : c.items }));
+                save(false);
+                setStatus('success', '☁ 雲端已同步');
+            }
+        } catch (e) { setStatus('error', '雲端超時'); }
+    }
+
+    async function syncCloud() {
+        setStatus('syncing', '同步中...');
+        try {
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify(data), 
+                signal: AbortSignal.timeout(5000) 
+            });
+            setStatus('success', '☁ 同步成功 ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+        } catch (e) { setStatus('error', '同步失敗'); }
+    }
+
+    function setStatus(s, t) { const el = document.getElementById('syncStatus'); el.className = 'status-'+s; el.innerText = t; }
+
+    function changeFilter(t) {
+        filterType = t;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.id === 'f-'+t));
+        render();
+    }
+
+    function toggleItem(id, k) {
+        const c = data.find(x => x.id === id);
+        if (c) { 
+            c.items[k] = !c.items[k]; 
+            if(!Object.values(c.items).every(v=>v)) c.taken = false; 
+            save(); 
         }
     }
 
-    // --- 彈窗操作 ---
-    function openModal(editData = null) {
-        const isEdit = !!editData;
-        const d = editData || { raw: '', items: {}, note: '', isTaken: false };
-        const defaultOpts = ['Flacs', 'Toric-mark', '一樓拍照', '吃藥', '其他'];
-        
-        document.getElementById('modalArea').innerHTML = `
-        <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
-            <div class="modal">
-                <h3 style="margin-bottom:15px">${isEdit ? '編輯個案' : '新增個案'}</h3>
-                <div class="form-row">
-                    <label>基本資料 (案號 姓名 身分證)</label>
-                    <input id="f-raw" value="${d.raw}" placeholder="例：0058 張曉明 A123456789" autocomplete="off">
-                </div>
-                <div class="form-row">
-                    <label>檢查項目</label>
-                    <div class="check-grid">
-                        ${defaultOpts.map(opt => `
-                            <div class="check-opt ${d.items[opt] !== undefined ? 'active' : ''}" onclick="toggleModalOpt(this)">
-                                <input type="checkbox" style="display:none" name="m-opt" value="${opt}" ${d.items[opt] !== undefined ? 'checked' : ''}>
-                                ${opt}
-                            </div>
-                        `).join('')}
+    function toggleTake(id) { const c = data.find(x => x.id === id); if(c) { c.taken = !c.taken; save(); } }
+    
+    function delCase(id) { if (confirm('確定刪除？')) { data = data.filter(x => x.id !== id); save(); } }
+    
+    function askClear() { if (prompt('請輸入管理密碼：') === PWD) { data = []; save(); } else alert('密碼錯誤'); }
+
+    function openForm(editId = null) {
+        const c = data.find(x => x.id === editId) || { raw: '', items: {}, note: '' };
+        document.getElementById('modalContainer').innerHTML = `
+            <div class="modal-overlay" id="m-over" onclick="if(event.target.id==='m-over')closeForm()">
+                <div class="modal">
+                    <button class="modal-close-x" onclick="closeForm()">✕</button>
+                    <h3 style="margin-bottom:15px">${editId?'編輯':'新增'}個案</h3>
+                    <div class="field">
+                        <label>病患資料 (案號 姓名 病例號)</label>
+                        <input id="f-raw" value="${c.raw}" placeholder="0061 王大明 123...">
+                    </div>
+                    <div class="field">
+                        <label>檢查項目</label>
+                        <div class="opt-grid">
+                            ${OPTS.map(o => `
+                                <div class="opt-item ${c.items[o]!==undefined?'active':''}" onclick="this.classList.toggle('active')">
+                                    <input type="checkbox" name="m-opt" value="${o}" ${c.items[o]!==undefined?'checked':''} style="display:none">
+                                    ${o}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>備註</label>
+                        <textarea id="f-note" rows="2">${c.note||''}</textarea>
+                    </div>
+                    <div class="modal-btns">
+                        <button class="btn-cancel" onclick="closeForm()">取消</button>
+                        <button class="btn-confirm" onclick="submitForm(${editId})">儲存</button>
                     </div>
                 </div>
-                <div class="form-row">
-                    <label>備註</label>
-                    <textarea id="f-note" rows="2">${d.note || ''}</textarea>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-cancel" onclick="closeModal()">取消</button>
-                    <button class="btn-save" onclick="saveCase(${isEdit ? d.id : 'null'})">儲存</button>
-                </div>
-            </div>
-        </div>`;
-        document.getElementById('f-raw').focus();
+            </div>`;
     }
 
-    function toggleModalOpt(el) {
-        const cb = el.querySelector('input');
-        cb.checked = !cb.checked;
-        el.classList.toggle('active', cb.checked);
-    }
+    function closeForm() { document.getElementById('modalContainer').innerHTML = ''; }
 
-    function closeModal() { document.getElementById('modalArea').innerHTML = ''; }
-
-    function saveCase(editId) {
-        const raw = document.getElementById('f-raw').value.trim();
-        if (!raw) return;
-
-        const parts = raw.split(/\s+/);
-        let name = parts[1] || '未知';
-        let info = parts.filter((_, i) => i !== 1).join(' / ') || raw;
-        const selectedOpts = Array.from(document.querySelectorAll('input[name="m-opt"]:checked')).map(i => i.value);
-        const note = document.getElementById('f-note').value.trim();
-
-        const oldCase = editId ? cases.find(c => c.id === editId) : null;
-        const newItems = {};
-        selectedOpts.forEach(opt => {
-            newItems[opt] = (oldCase && oldCase.items[opt] !== undefined) ? oldCase.items[opt] : false;
+    function submitForm(id) {
+        const raw = document.getElementById('f-raw').value.trim(); if(!raw) return;
+        const pts = raw.split(/\s+/);
+        const name = pts[1] || pts[0];
+        const info = pts.filter((_,i)=>i!==1).join(' / ');
+        const note = document.getElementById('f-note').value;
+        const selected = Array.from(document.querySelectorAll('input[name="m-opt"]'))
+                            .filter(i => i.parentElement.classList.contains('active'))
+                            .map(i => i.value);
+        
+        const items = {}; 
+        const old = data.find(x => x.id === id);
+        selected.forEach(o => {
+            items[o] = (old && old.items[o] !== undefined) ? old.items[o] : false;
         });
 
-        if (editId) {
-            cases = cases.map(c => c.id === editId ? { ...c, raw, name, info, items: newItems, note } : c);
+        if (id) {
+            const i = data.findIndex(x => x.id === id); 
+            data[i] = { ...data[i], raw, name, info, note, items }; 
         } else {
-            cases.push({ id: nextId++, raw, name, info, items: newItems, note, isTaken: false });
+            data.unshift({ id: Date.now(), raw, name, info, note, items, taken: false });
         }
-        
-        saveToLocal();
-        closeModal();
-        renderList();
+        closeForm(); 
+        save();
     }
-
-    function editCase(id) {
-        const c = cases.find(x => x.id === id);
-        if (c) openModal(c);
-    }
-
-    function openAdminClearModal() {
-        document.getElementById('modalArea').innerHTML = `
-        <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
-            <div class="modal">
-                <h3 style="margin-bottom:10px; color:var(--red-primary)">清空當日資料</h3>
-                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:15px">這將永久刪除本地與雲端的所有紀錄。</p>
-                <div class="form-row">
-                    <label>輸入管理密碼</label>
-                    <input type="password" id="admin-pass" autofocus>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-cancel" onclick="closeModal()">取消</button>
-                    <button class="btn-danger" onclick="confirmClearAll()">確定刪除</button>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    function confirmClearAll() {
-        if (document.getElementById('admin-pass').value === ADMIN_PASSWORD) {
-            cases = [];
-            nextId = 1;
-            saveToLocal();
-            closeModal();
-            renderList();
-        } else {
-            alert('密碼錯誤');
-        }
-    }
-
-    // --- 啟動 ---
-    loadFromCloud();
-    renderList();
 </script>
 </body>
 </html>
