@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>手術前檢查記錄清單</title>
     
-    <!-- PWA 與應用程式圖示設定 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#121212">
     
-    <!-- iPhone 圖示 -->
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/n27394-rgb/6KOR-list/main/icon.png">
     
-    <!-- 網頁標籤與 Android 圖示 -->
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/n27394-rgb/6KOR-list/main/icon.png">
 
     <style>
-        /* 定義全局 UI 變數 */
         :root {
             --bg-body: #121212; --bg-card: #1e1e1e; --bg-input: #2a2a2a; --border-color: #333;
             --text-primary: #e0e0e0; --text-secondary: #aaa; --teal-primary: #26a69a; --teal-bg: rgba(38, 166, 154, 0.1);
@@ -25,25 +21,21 @@
             --red-primary: #ef5350; --br-md: 10px; --br-lg: 16px;
         }
 
-        /* 基礎重置與排版設定 */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg-body); color: var(--text-primary); line-height: 1.4; }
         .app { max-width: 550px; margin: 0 auto; padding: 12px; }
 
-        /* 同步狀態提示標籤 */
         #syncStatus { font-size: 11px; text-align: right; height: 20px; color: var(--text-secondary); }
         .status-syncing { color: var(--blue-primary) !important; }
         .status-success { color: var(--teal-primary) !important; }
         .status-error { color: var(--red-primary) !important; }
         
-        /* 頁首標題區 */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .header h2 { font-size: 18px; font-weight: 600; }
         .header p { font-size: 12px; color: var(--text-secondary); }
         .btn-add { background: var(--teal-primary); color: white; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: var(--br-md); border:none; cursor:pointer; }
         .btn-clear { background: transparent; color: var(--red-primary); border: 1px solid rgba(239,83,80,.3); padding: 5px 10px; font-size: 11px; border-radius: var(--br-md); cursor:pointer; }
         
-        /* 上方統計網格 */
         .stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 12px; }
         .stat-item { background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 2px; text-align: center; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
         .stat-item:active { background: var(--bg-input); }
@@ -51,37 +43,30 @@
         .stat-val { font-size: 14px; font-weight: 700; color: var(--amber-primary); }
         .stat-val.zero { color: var(--text-secondary); opacity: 0.3; }
         
-        /* 篩選按鈕列 */
         .filter-row { display: flex; gap: 4px; padding: 4px; background: var(--bg-card); border-radius: 20px; margin-bottom: 12px; border: 1px solid var(--border-color); }
         .filter-btn { flex: 1; font-size: 11px; padding: 8px 0; color: var(--text-secondary); background: transparent; border:none; border-radius: 16px; cursor:pointer; transition: all 0.2s; }
         .filter-btn.active { background: var(--bg-input); color: white; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
         
-        /* 個案卡片 */
         .case-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--br-lg); padding: 16px; margin-bottom: 12px; transition: transform 0.1s; }
         .case-card.taken { border-left: 5px solid var(--purple-primary); background: linear-gradient(90deg, rgba(179,157,219,0.08), transparent); }
         .case-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .case-name { font-size: 17px; font-weight: 600; }
         .case-info { font-size: 11px; color: var(--text-secondary); font-family: monospace; margin-top: 2px; }
         
-        /* 檢查項目點選標籤 (Chips) */
         .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
         .chip { font-size: 12px; padding: 6px 14px; border-radius: 20px; background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all 0.2s; }
         .chip.done { background: var(--teal-bg); color: var(--teal-primary); border-color: var(--teal-primary); }
         
-        /* 備註欄位樣式 */
         .note { font-size: 12px; color: var(--text-secondary); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; margin: 10px 0; border-left: 3px solid #555; }
         
-        /* 頁尾 */
         .footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2a2a2a; }
         .footer-left { display: flex; gap: 14px; }
         .footer-link { font-size: 11px; color: var(--text-secondary); background: none; cursor: pointer; border:none; padding: 4px 0; }
         
-        /* 接刀按鈕 */
         .btn-take { padding: 7px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; background: #2a2a2a; color: #555; border:none; cursor: pointer; transition: all 0.2s; }
         .btn-take.ready { background: var(--purple-bg); color: var(--purple-primary); border: 1px solid rgba(179,157,219,0.3); }
         .btn-take.active { background: var(--purple-primary); color: #121212; }
-        
-        /* 彈窗 */
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 15px; backdrop-filter: blur(4px); }
         .modal { background: var(--bg-card); width: 100%; max-width: 380px; padding: 24px; border-radius: 20px; border: 1px solid #444; position: relative; }
         .modal-close-x { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; border-radius: 50%; transition: background 0.2s; }
@@ -94,8 +79,7 @@
         .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .opt-item { background: var(--bg-input); padding: 12px; border-radius: 12px; border: 1px solid #444; text-align: center; font-size: 13px; cursor: pointer; }
         .opt-item.active { border-color: var(--blue-primary); color: var(--blue-primary); background: rgba(100,181,246,0.1); }
-        
-        /* 待辦清單樣式 */
+
         .pending-list { max-height: 400px; overflow-y: auto; margin-top: 10px; }
         .pending-item { padding: 12px 4px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .pending-item:last-child { border: none; }
@@ -118,7 +102,6 @@
         </div>
     </div>
 
-    <!-- 檢查項目統計區域 -->
     <div class="stats-row" id="statList"></div>
 
     <div class="filter-row">
@@ -145,7 +128,6 @@
     window.onload = () => {
         initUI();
         loadCloud();
-        // 監聽 Esc 鍵
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeForm();
         });
@@ -174,7 +156,6 @@
             return true;
         });
 
-        // 渲染統計格點，加入點擊事件
         document.getElementById('statList').innerHTML = OPTS.map(o => `
             <div class="stat-item" onclick="showPendingList('${o}')">
                 <span class="stat-label">${o}</span>
@@ -210,9 +191,6 @@
         }).join('');
     }
 
-    /**
-     * 顯示特定檢查項目未完成的清單
-     */
     function showPendingList(optName) {
         const pending = data.filter(c => c.items[optName] === false);
         
@@ -247,7 +225,6 @@
         `;
     }
 
-    /** 滾動到指定卡片位置 */
     function scrollToId(id) {
         changeFilter('all');
         setTimeout(() => {
